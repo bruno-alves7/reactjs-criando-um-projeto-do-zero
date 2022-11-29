@@ -1,1 +1,14 @@
-// TODO
+.container {
+  padding-bottom: 4rem;
+
+  a {
+    cursor: pointer;
+    color: var(--highlight);
+    font-size: 1.2rem;
+    outline: none;
+    text-decoration: none;
+    display: inline-block;
+
+    margin-top: 5rem;
+  }
+}

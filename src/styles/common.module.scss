@@ -1,1 +1,14 @@
-// TODO
+.container {
+  width: min(100% - 2rem, 700px);
+  margin-inline: auto;
+
+  h2 {
+    color: var(--heading);
+    font-weight: 700;
+    line-height: 2.5rem;
+  }
+
+  span {
+    color: var(--body)
+  }
+}

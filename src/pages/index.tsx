@@ -1,6 +1,9 @@
-import { GetStaticProps } from 'next';
+import { useState } from 'react';
+import { GetStaticProps, GetServerSideProps } from 'next';
 
 import { getPrismicClient } from '../services/prismic';
+
+import Post from '../components/Post';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
@@ -24,13 +27,60 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-// export default function Home() {
-//   // TODO
-// }
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [vm, setVm] = useState({
+    loadedMorePosts: false,
+    next_page: '',
+    posts: [],
+  });
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient({});
-//   // const postsResponse = await prismic.getByType(TODO);
+  const loadMorePosts = async (): Promise<void> => {
+    fetch(postsPagination.next_page)
+      .then(res => res.json())
+      .then(data => {
+        setVm({
+          loadedMorePosts: true,
+          next_page: data.next_page,
+          posts: data.results,
+        });
+      });
+  };
 
-//   // TODO
-// };
+  return (
+    <div className={commonStyles.container}>
+      <div className={styles.container}>
+        {vm.loadedMorePosts
+          ? vm.posts.map(post => <Post key={post.uid} post={post} />)
+          : postsPagination.results.map(post => (
+              <Post key={post.uid} post={post} />
+            ))}
+
+        {postsPagination.next_page && (
+          <button type="button" onClick={loadMorePosts}>
+            Carregar mais posts
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient({});
+  const postsResponse = await prismic.getByType('posts', {
+    page: 1,
+    pageSize: 10,
+  });
+
+  const postsPagination = {
+    results: postsResponse.results,
+    next_page: postsResponse.next_page,
+  };
+
+  return {
+    props: {
+      postsPagination,
+    },
+    revalidate: 60 * 60, // 1 hour
+  };
+};

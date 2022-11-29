@@ -1,1 +1,26 @@
-// TODO
+.container {
+  width: min(100% - 2rem, 720px);
+  margin-inline: auto;
+  height: 8rem;
+  align-items: center;
+  display: flex;
+
+  img {
+    cursor: pointer;
+  }
+
+  span {
+    font-weight: bold;
+    color: var(--heading);
+
+    + span {
+      color: var(--highlight);
+      padding-left: 2px;
+    }
+  }
+
+  a {
+    text-decoration: none;
+    outline: none;
+  }
+}
