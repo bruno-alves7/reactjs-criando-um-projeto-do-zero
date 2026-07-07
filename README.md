@@ -23,7 +23,7 @@ Projeto de estudo em React/Next.js para listar posts de um blog a partir do Pris
 
 ## Variaveis de ambiente
 
-O projeto roda com posts locais de fallback quando o Prismic nao esta configurado.
+O projeto roda com posts locais de exemplo do desafio original quando o Prismic nao esta configurado.
 
 Para usar dados reais do Prismic, crie um arquivo `.env.local` com:
 

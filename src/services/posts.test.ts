@@ -24,8 +24,8 @@ describe('fallback posts', () => {
   });
 
   it('returns a fallback post by slug or the first fallback post', () => {
-    expect(getFallbackPostBySlug('testes-com-vitest').uid).toBe(
-      'testes-com-vitest',
+    expect(getFallbackPostBySlug('criando-um-app-cra-do-zero').uid).toBe(
+      'criando-um-app-cra-do-zero',
     );
     expect(getFallbackPostBySlug('missing-post')).toBe(fallbackPosts[0]);
   });

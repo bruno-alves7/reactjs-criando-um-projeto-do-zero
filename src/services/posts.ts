@@ -2,34 +2,33 @@ import type { PostDocument, PostPagination } from '../types';
 
 export const fallbackPosts: PostDocument[] = [
   {
-    uid: 'modernizando-uma-aplicacao-next',
-    first_publication_date: '2026-07-07T12:00:00+0000',
+    uid: 'como-utilizar-hooks',
+    first_publication_date: '2021-03-15T19:25:28+0000',
     data: {
-      title: 'Modernizando uma aplicação Next.js',
-      subtitle:
-        'Como atualizar uma base legada sem perder cobertura de testes.',
-      author: 'Bruno Alves',
+      title: 'Como utilizar Hooks',
+      subtitle: 'Pensando em sincronização em vez de ciclos de vida',
+      author: 'Joseph Oliveira',
       banner: {
         url: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80',
         alt: 'Editor de código aberto em um notebook',
       },
       content: [
         {
-          heading: 'Por que modernizar?',
+          heading: 'Proin et varius',
           body: [
             {
               type: 'paragraph',
-              text: 'Atualizar dependências reduz riscos de segurança, melhora a experiência de desenvolvimento e remove workarounds de runtime que se acumulam em projetos antigos.',
+              text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
               spans: [],
             },
           ],
         },
         {
-          heading: 'Como fazer com segurança',
+          heading: 'Cras laoreet mi',
           body: [
             {
               type: 'paragraph',
-              text: 'A estratégia usada aqui preserva o Pages Router, adiciona fallback local para o CMS e mantém testes de comportamento com cobertura mínima de 90%.',
+              text: 'Nullam dolor sapien, vulputate eu diam at, condimentum hendrerit tellus. Nam facilisis sodales felis, pharetra pharetra lectus auctor sed.',
               spans: [],
             },
           ],
@@ -38,24 +37,24 @@ export const fallbackPosts: PostDocument[] = [
     },
   },
   {
-    uid: 'testes-com-vitest',
-    first_publication_date: '2026-07-06T12:00:00+0000',
+    uid: 'criando-um-app-cra-do-zero',
+    first_publication_date: '2021-03-25T19:27:35+0000',
     data: {
-      title: 'Testes com Vitest',
+      title: 'Criando um app CRA do zero',
       subtitle:
-        'Uma suíte rápida para validar páginas, componentes e integrações.',
-      author: 'Bruno Alves',
+        'Tudo sobre como criar a sua primeira aplicação utilizando Create React App',
+      author: 'Danilo Vieira',
       banner: {
         url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80',
         alt: 'Pessoa trabalhando com testes automatizados',
       },
       content: [
         {
-          heading: 'Feedback curto',
+          heading: 'Introdução',
           body: [
             {
               type: 'paragraph',
-              text: 'Vitest mantém a suíte rápida e funciona bem com Testing Library para validar o que o usuário realmente enxerga.',
+              text: 'Tudo sobre como criar a sua primeira aplicação utilizando Create React App.',
               spans: [],
             },
           ],
