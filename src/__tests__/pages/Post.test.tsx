@@ -5,13 +5,14 @@ import {
   GetStaticPathsResult,
 } from 'next';
 import { ParsedUrlQuery } from 'querystring';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useRouter } from 'next/router';
+import { fallbackPosts } from '../../services/posts';
 import { getPrismicClient } from '../../services/prismic';
 import Post, { getStaticProps, getStaticPaths } from '../../pages/post/[slug]';
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
   data: {
     title: string;
@@ -174,25 +175,24 @@ const mockedGetByUIDReturn = {
 
 vi.mock('@prismicio/client', () => ({}));
 vi.mock('../../services/prismic', () => ({
+  hasPrismicEndpoint: vi.fn(() => Boolean(process.env.PRISMIC_API_ENDPOINT)),
   getPrismicClient: vi.fn(),
 }));
-vi.mock('next/router', () => ({
-  useRouter: vi.fn(),
-}));
 
-const mockedUseRouter = vi.mocked(useRouter);
 const mockedPrismic = vi.mocked(getPrismicClient);
 
 describe('Post', () => {
   beforeEach(() => {
-    mockedUseRouter.mockReturnValue({
-      isFallback: false,
-    } as ReturnType<typeof useRouter>);
+    process.env.PRISMIC_API_ENDPOINT = 'https://example.cdn.prismic.io/api/v2';
 
     mockedPrismic.mockReturnValue({
       getByUID: vi.fn().mockResolvedValue(mockedGetByUIDReturn),
       getByType: vi.fn().mockResolvedValue(mockedGetByTypeReturn),
     } as unknown as ReturnType<typeof getPrismicClient>);
+  });
+
+  afterEach(() => {
+    delete process.env.PRISMIC_API_ENDPOINT;
   });
 
   it('should be able to return prismic posts documents paths using getStaticPaths', async () => {
@@ -218,6 +218,46 @@ describe('Post', () => {
     expect(response.paths).toEqual(getStaticPathsReturn);
   });
 
+  it('returns fallback paths when Prismic is not configured', async () => {
+    delete process.env.PRISMIC_API_ENDPOINT;
+
+    const response = (await getStaticPaths({})) as GetStaticPathsResult;
+
+    expect(response.paths).toEqual([
+      {
+        params: {
+          slug: fallbackPosts[0].uid,
+        },
+      },
+      {
+        params: {
+          slug: fallbackPosts[1].uid,
+        },
+      },
+    ]);
+  });
+
+  it('returns fallback paths when Prismic request fails', async () => {
+    mockedPrismic.mockReturnValue({
+      getByType: vi.fn().mockRejectedValue(new Error('Prismic unavailable')),
+    } as unknown as ReturnType<typeof getPrismicClient>);
+
+    const response = (await getStaticPaths({})) as GetStaticPathsResult;
+
+    expect(response.paths).toEqual([
+      {
+        params: {
+          slug: fallbackPosts[0].uid,
+        },
+      },
+      {
+        params: {
+          slug: fallbackPosts[1].uid,
+        },
+      },
+    ]);
+  });
+
   it('should be able to return prismic post document using getStaticProps', async () => {
     const postReturn = mockedGetByUIDReturn;
     const getStaticPropsContext: GetStaticPropsContext<ParsedUrlQuery> = {
@@ -231,6 +271,41 @@ describe('Post', () => {
     )) as GetStaticPropsResult;
 
     expect(response.props.post).toEqual(expect.objectContaining(postReturn));
+  });
+
+  it('returns fallback post when Prismic is not configured', async () => {
+    delete process.env.PRISMIC_API_ENDPOINT;
+
+    const response = (await getStaticProps({
+      params: {
+        slug: fallbackPosts[1].uid,
+      },
+    } as GetStaticPropsContext<ParsedUrlQuery>)) as GetStaticPropsResult;
+
+    expect(response.props.post.uid).toBe(fallbackPosts[1].uid);
+  });
+
+  it('returns the first fallback post when slug params are missing', async () => {
+    delete process.env.PRISMIC_API_ENDPOINT;
+
+    const response = (await getStaticProps({})) as GetStaticPropsResult;
+
+    expect(response.props.post.uid).toBe(fallbackPosts[0].uid);
+  });
+
+  it('returns fallback post when Prismic request fails', async () => {
+    mockedPrismic.mockReturnValue({
+      getByUID: vi.fn().mockRejectedValue(new Error('Prismic unavailable')),
+      getByType: vi.fn().mockResolvedValue(mockedGetByTypeReturn),
+    } as unknown as ReturnType<typeof getPrismicClient>);
+
+    const response = (await getStaticProps({
+      params: {
+        slug: fallbackPosts[0].uid,
+      },
+    } as GetStaticPropsContext<ParsedUrlQuery>)) as GetStaticPropsResult;
+
+    expect(response.props.post.uid).toBe(fallbackPosts[0].uid);
   });
 
   it('should be able to render post document info', () => {
@@ -249,15 +324,30 @@ describe('Post', () => {
     screen.getByText(/Ut varius quis velit sed cursus/);
   });
 
-  it('should be able to render loading message if fallback', () => {
-    mockedUseRouter.mockReturnValueOnce({
-      isFallback: true,
-    } as ReturnType<typeof useRouter>);
+  it('renders a post with incomplete optional fields', () => {
+    render(
+      <Post
+        post={{
+          ...mockedGetByUIDReturn,
+          first_publication_date: null,
+          data: {
+            ...mockedGetByUIDReturn.data,
+            banner: {
+              url: mockedGetByUIDReturn.data.banner.url,
+            },
+            content: [
+              {
+                heading: 'Conteúdo vazio',
+                body: [],
+              },
+            ],
+          },
+        }}
+      />,
+    );
 
-    const postProps = mockedGetByUIDReturn;
-
-    render(<Post post={postProps} />);
-
-    screen.getByText('Carregando...');
+    screen.getByText('Como utilizar Hooks');
+    screen.getByText('0 min');
+    screen.getByText('Conteúdo vazio');
   });
 });

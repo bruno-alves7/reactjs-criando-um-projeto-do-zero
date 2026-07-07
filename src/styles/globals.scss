@@ -6,10 +6,10 @@
 
 :root {
   --highlight: #e20e8d;
-  --heading: #F8F8F8;
-  --background: #1A1D23;
-  --info: #BBBBBB;
-  --body: #D7D7D7;
+  --heading: #f8f8f8;
+  --background: #1a1d23;
+  --info: #bbbbbb;
+  --body: #d7d7d7;
 }
 
 @media (max-width: 1080px) {
@@ -27,5 +27,7 @@
 body {
   background-color: var(--background);
   color: var(--body);
-  font: 400 1rem 'Inter',sans-serif;
+  font:
+    400 1rem 'Inter',
+    sans-serif;
 }

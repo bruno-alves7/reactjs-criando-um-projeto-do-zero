@@ -2,27 +2,30 @@
 
 Projeto de estudo em React/Next.js para listar posts de um blog a partir do Prismic, carregar mais publicacoes e renderizar paginas estaticas de cada post.
 
-> Este repositorio e um exercicio. Para producao, revise versionamento das dependencias, monitoramento, tratamento de erro de API, preview do CMS, acessibilidade e estrategia de cache.
+> Este repositorio e um exercicio. Para producao, revise monitoramento, preview do CMS, acessibilidade, estrategia de cache e politicas de seguranca.
 
 ## Stack
 
-- Next.js 10
-- React 17
+- Next.js 16
+- React 19
 - TypeScript
 - Sass modules
 - Prismic
 - date-fns
 - Vitest e Testing Library
+- ESLint flat config
 
 ## Requisitos
 
-- Node.js 14 ou 16 para build com Next.js 10
+- Node.js 24 LTS
 - npm
-- Endpoint do Prismic
+- Endpoint do Prismic opcional
 
 ## Variaveis de ambiente
 
-Crie um arquivo `.env.local` com:
+O projeto roda com posts locais de fallback quando o Prismic nao esta configurado.
+
+Para usar dados reais do Prismic, crie um arquivo `.env.local` com:
 
 ```bash
 PRISMIC_API_ENDPOINT=https://seu-repositorio.cdn.prismic.io/api/v2
@@ -57,12 +60,18 @@ A aplicacao roda, por padrao, em `http://localhost:3000`.
 
 ## O que foi atualizado
 
+- Next.js foi atualizado de 10 para 16.
+- React foi atualizado de 17 para 19.
+- Node alvo atualizado para 24 LTS via `.nvmrc`.
 - Jest foi substituido por Vitest, seguindo o padrao do projeto de upload de imagens.
 - Testes foram migrados de `.spec.tsx` para `.test.tsx`.
 - Setup de teste foi movido para `src/test/setup.tsx`.
 - Cobertura minima configurada em 90% para branches, functions, lines e statements.
-- Testes cobrem pagina inicial, pagina de post, header e cliente do Prismic.
+- Testes cobrem pagina inicial, pagina de post, componentes, fallback local e cliente do Prismic.
 - A paginacao da home agora preserva posts ja renderizados, usa a proxima pagina atual e remove o botao quando nao ha mais posts.
+- O app passou a ter fallback local quando o Prismic nao esta configurado ou esta indisponivel.
+- `prismic-dom` e integracoes antigas de preview foram removidas.
+- ESLint foi migrado para flat config moderna.
 
 ## Boas praticas aplicadas
 
@@ -72,9 +81,10 @@ A aplicacao roda, por padrao, em `http://localhost:3000`.
 - Configuracao de cobertura exclui arquivos de bootstrap do Next e arquivos de teste.
 - Scripts padronizados com `test`, `test:watch` e `test:coverage`.
 - Gerenciamento de dependencias padronizado com `package-lock.json`, como no projeto de upload de imagens.
+- Build de producao validado com `next build --webpack`.
 
 ## Observacoes
 
-O projeto continua no Pages Router e nas versoes originais de Next.js/React para preservar a arquitetura do exercicio. A modernizacao foi concentrada no fluxo de testes, cobertura e pequenos ajustes de qualidade sem reescrever a aplicacao.
+O projeto continua no Pages Router para preservar a arquitetura do exercicio original. A atualizacao moderniza runtime, dependencias, testes e configuracao sem migrar para App Router.
 
-Em Node.js 24+, o `next build` do Next.js 10 pode falhar por incompatibilidade com internals do PostCSS bloqueados por `package exports`. Para build de producao, use Node 14/16 ou planeje uma atualizacao maior do Next.js.
+O `npm audit` ainda aponta vulnerabilidade moderada transitiva em `postcss` via Next.js. O fix automatico sugerido pelo npm usa `--force` e faz downgrade quebrador, entao nao foi aplicado. Atualize assim que a cadeia do Next publicar uma versao corrigida.

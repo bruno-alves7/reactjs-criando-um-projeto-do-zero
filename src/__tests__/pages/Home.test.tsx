@@ -1,14 +1,15 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { GetStaticPropsContext } from 'next';
-import { RouterContext } from 'next/dist/next-server/lib/router-context';
+import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime';
 import { ParsedUrlQuery } from 'querystring';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App, { getStaticProps } from '../../pages';
+import { fallbackPosts } from '../../services/posts';
 import { getPrismicClient } from '../../services/prismic';
 
 interface Post {
-  uid?: string;
+  uid: string;
   first_publication_date: string | null;
   data: {
     title: string;
@@ -57,6 +58,7 @@ const mockedGetByTypeReturn: PostPagination = {
 
 vi.mock('@prismicio/client', () => ({}));
 vi.mock('../../services/prismic', () => ({
+  hasPrismicEndpoint: vi.fn(() => Boolean(process.env.PRISMIC_API_ENDPOINT)),
   getPrismicClient: vi.fn(),
 }));
 
@@ -64,11 +66,7 @@ const mockedPrismic = vi.mocked(getPrismicClient);
 const mockedFetch = vi.fn();
 const mockedPush = vi.fn();
 
-function RouterWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+function RouterWrapper({ children }: { children: React.ReactNode }) {
   const MockedRouterContext = RouterContext as React.Context<unknown>;
 
   return (
@@ -110,8 +108,14 @@ describe('Home', () => {
     });
   });
 
+  afterEach(() => {
+    delete process.env.PRISMIC_API_ENDPOINT;
+  });
+
   it('should be able to return prismic posts documents using getStaticProps', async () => {
     const getStaticPropsContext: GetStaticPropsContext<ParsedUrlQuery> = {};
+
+    process.env.PRISMIC_API_ENDPOINT = 'https://example.cdn.prismic.io/api/v2';
 
     const response = (await getStaticProps(
       getStaticPropsContext,
@@ -125,6 +129,35 @@ describe('Home', () => {
         expect.objectContaining(mockedGetByTypeReturn.results[0]),
         expect.objectContaining(mockedGetByTypeReturn.results[1]),
       ]),
+    );
+  });
+
+  it('returns fallback posts when Prismic is not configured', async () => {
+    const getStaticPropsContext: GetStaticPropsContext<ParsedUrlQuery> = {};
+
+    const response = (await getStaticProps(
+      getStaticPropsContext,
+    )) as GetStaticPropsResult;
+
+    expect(response.props.postsPagination.results[0].uid).toBe(
+      fallbackPosts[0].uid,
+    );
+  });
+
+  it('returns fallback posts when Prismic request fails', async () => {
+    process.env.PRISMIC_API_ENDPOINT = 'https://example.cdn.prismic.io/api/v2';
+    mockedPrismic.mockReturnValue({
+      getByType: vi.fn().mockRejectedValue(new Error('Prismic unavailable')),
+    } as unknown as ReturnType<typeof getPrismicClient>);
+
+    const getStaticPropsContext: GetStaticPropsContext<ParsedUrlQuery> = {};
+
+    const response = (await getStaticProps(
+      getStaticPropsContext,
+    )) as GetStaticPropsResult;
+
+    expect(response.props.postsPagination.results[0].uid).toBe(
+      fallbackPosts[0].uid,
     );
   });
 
@@ -152,17 +185,15 @@ describe('Home', () => {
     fireEvent.click(screen.getByText('Como utilizar Hooks'));
     fireEvent.click(screen.getByText('Criando um app CRA do zero'));
 
-    expect(mockedPush).toHaveBeenNthCalledWith(
-      1,
-      '/post/como-utilizar-hooks',
-      expect.anything(),
-      expect.anything(),
-    );
+    expect(mockedPush).toHaveBeenNthCalledWith(1, '/post/como-utilizar-hooks', {
+      scroll: true,
+    });
     expect(mockedPush).toHaveBeenNthCalledWith(
       2,
       '/post/criando-um-app-cra-do-zero',
-      expect.anything(),
-      expect.anything(),
+      {
+        scroll: true,
+      },
     );
   });
 

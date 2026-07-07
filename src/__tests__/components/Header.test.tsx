@@ -1,16 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { RouterContext } from 'next/dist/next-server/lib/router-context';
+import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Header from '../../components/Header';
 
 const mockedPush = vi.fn();
 
-function RouterWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+function RouterWrapper({ children }: { children: React.ReactNode }) {
   const MockedRouterContext = RouterContext as React.Context<unknown>;
 
   return (
@@ -42,10 +38,8 @@ describe('Header', () => {
 
     fireEvent.click(screen.getByAltText('logo'));
 
-    expect(mockedPush).toHaveBeenCalledWith(
-      '/',
-      expect.anything(),
-      expect.anything(),
-    );
+    expect(mockedPush).toHaveBeenCalledWith('/', {
+      scroll: true,
+    });
   });
 });

@@ -3,12 +3,12 @@ import Image from 'next/image';
 
 import styles from './header.module.scss';
 
-export default function Header(): JSX.Element {
+export default function Header() {
   return (
     <header className={styles.container}>
       <Link href="/">
         <div>
-          <Image src="/logo.png" alt="logo" width="239" height="26" />
+          <Image src="/logo.svg" alt="logo" width="239" height="26" priority />
         </div>
       </Link>
     </header>
