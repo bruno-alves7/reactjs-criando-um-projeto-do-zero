@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger -- Prismic RichText serializes trusted CMS content to HTML. */
 import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { format } from 'date-fns';
@@ -61,7 +62,7 @@ export default function Post({ post }: PostProps): JSX.Element {
             <span>
               {format(
                 new Date(post.first_publication_date),
-                'dd MMM yyyy'
+                'dd MMM yyyy',
               ).toLowerCase()}
             </span>
           </div>

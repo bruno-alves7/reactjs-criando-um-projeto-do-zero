@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GetStaticProps, GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -19,7 +19,7 @@ interface Post {
 }
 
 interface PostPagination {
-  next_page: string;
+  next_page: string | null;
   results: Post[];
 }
 
@@ -28,34 +28,29 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
-  const [vm, setVm] = useState({
-    loadedMorePosts: false,
-    next_page: '',
-    posts: [],
-  });
+  const [posts, setPosts] = useState(postsPagination.results);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
 
   const loadMorePosts = async (): Promise<void> => {
-    fetch(postsPagination.next_page)
-      .then(res => res.json())
-      .then(data => {
-        setVm({
-          loadedMorePosts: true,
-          next_page: data.next_page,
-          posts: data.results,
-        });
-      });
+    if (!nextPage) {
+      return;
+    }
+
+    const response = await fetch(nextPage);
+    const data = await response.json();
+
+    setPosts(currentPosts => [...currentPosts, ...data.results]);
+    setNextPage(data.next_page);
   };
 
   return (
     <div className={commonStyles.container}>
       <div className={styles.container}>
-        {vm.loadedMorePosts
-          ? vm.posts.map(post => <Post key={post.uid} post={post} />)
-          : postsPagination.results.map(post => (
-              <Post key={post.uid} post={post} />
-            ))}
+        {posts.map(post => (
+          <Post key={post.uid} post={post} />
+        ))}
 
-        {postsPagination.next_page && (
+        {nextPage && (
           <button type="button" onClick={loadMorePosts}>
             Carregar mais posts
           </button>
